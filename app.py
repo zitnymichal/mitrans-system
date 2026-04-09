@@ -14,7 +14,7 @@ MOJE_FIRMA = {
     "email": "info@themitrans.cz"
 }
 
-# --- 2. KOMPLETNÍ TEXT PODMÍNEK (OPRAVENO PROTI SYNTAX ERROR) ---
+# --- 2. TEXT PODMÍNEK (30 BODŮ) ---
 FULL_TERMS = """1. Basic Provisions The Carrier undertakes to transport the goods from the place of dispatch to the place of destination according to the instructions of the Principal (The Mitrans s.r.o.) with due professional care and within the time limit stipulated by the Principal.
 2. Liability The Carrier shall be liable for any damage to the goods occurring from the moment the goods are taken over by the Carrier until the moment they are taken over by the consignee.
 3. Compensation for Damage In the event of loss or destruction of the consignment, the Carrier shall be obliged to compensate the damage in full.
@@ -73,10 +73,10 @@ def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
 def reset_form():
+    """Vymaže session_state bez st.rerun()"""
     for key in list(st.session_state.keys()):
         if key != "authenticated":
             del st.session_state[key]
-    st.rerun()
 
 # --- 4. STREAMLIT ROZHRANÍ ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛", layout="centered")
@@ -98,25 +98,28 @@ if not st.session_state["authenticated"]:
 st.title("🚛 The Mitrans s.r.o. - Order System")
 df_carriers = load_data()
 
+# --- SEKCE 1: DOPRAVCE ---
 st.subheader("1. Carrier Selection")
-carrier_list = ["-- New Carrier --"] + sorted(df_carriers['nazev'].tolist())
-selected_carrier = st.selectbox("Choose from directory", carrier_list, key="sel_carrier")
+carrier_names = ["-- New Carrier --"] + sorted(df_carriers['nazev'].tolist())
+selected_carrier = st.selectbox("Choose from directory", carrier_names, key="sel_carrier")
 
-carrier_data = df_carriers[df_carriers['nazev'] == selected_carrier]
-def_name = "" if selected_carrier == "-- New Carrier --" else selected_carrier
-def_ico = str(carrier_data['ico'].values[0]) if not carrier_data.empty else ""
-def_tel = str(carrier_data['tel'].values[0]) if not carrier_data.empty else ""
-def_email = str(carrier_data['email'].values[0]) if not carrier_data.empty else ""
-def_addr = str(carrier_data['adresa'].values[0]) if not carrier_data.empty else ""
+# Logika pro načtení dat při změně selectboxu
+if selected_carrier != "-- New Carrier --":
+    row = df_carriers[df_carriers['nazev'] == selected_carrier].iloc[0]
+    st.session_state['c_name'] = str(row['nazev'])
+    st.session_state['c_ico'] = str(row['ico'])
+    st.session_state['c_tel'] = str(row['tel'])
+    st.session_state['c_email'] = str(row['email'])
+    st.session_state['c_addr'] = str(row['adresa'])
 
 col1, col2 = st.columns(2)
 with col1:
-    c_name = st.text_input("Carrier Name", value=def_name, key="c_name")
-    c_ico = st.text_input("VAT ID / ID", value=def_ico, key="c_ico")
-    c_tel = st.text_input("Phone", value=def_tel, key="c_tel")
+    c_name = st.text_input("Carrier Name", key="c_name")
+    c_ico = st.text_input("VAT ID / ID", key="c_ico")
+    c_tel = st.text_input("Phone", key="c_tel")
 with col2:
-    c_email = st.text_input("Email", value=def_email, key="c_email")
-    c_addr = st.text_area("Full Address", value=def_addr, key="c_addr")
+    c_email = st.text_input("Email", key="c_email")
+    c_addr = st.text_area("Full Address", key="c_addr")
 
 if st.button("💾 Save/Update Carrier"):
     if c_name:
@@ -124,11 +127,12 @@ if st.button("💾 Save/Update Carrier"):
         df_carriers = df_carriers[df_carriers['nazev'] != c_name]
         df_carriers = pd.concat([df_carriers, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df_carriers)
-        st.success("Dopravce ulozen.")
+        st.success("Ulozeno.")
         st.rerun()
 
 st.divider()
 
+# --- SEKCE 2: LOGISTIKA ---
 st.subheader("2. Transport Logistics")
 ord_num = st.text_input("ORDER NUMBER", key="ord_num")
 col_l, col_u = st.columns(2)
@@ -141,6 +145,7 @@ with col_u:
 
 st.divider()
 
+# --- SEKCE 3: NÁKLAD ---
 st.subheader("3. Cargo & Price")
 c_qty, c_price = st.columns([1, 1])
 qty = c_qty.text_input("Quantity (LF)", key="qty")
@@ -149,10 +154,10 @@ desc = st.text_area("Description / VIN", key="desc")
 
 st.divider()
 
+# --- SEKCE 4: TLAČÍTKA ---
 c_btn1, c_btn2 = st.columns(2)
 with c_btn1:
-    if st.button("🆕 NEW ORDER / CLEAR", use_container_width=True, on_click=reset_form):
-        pass
+    st.button("🆕 NEW ORDER / CLEAR", use_container_width=True, on_click=reset_form)
 
 with c_btn2:
     if st.button("📄 PREPARE PDF", type="primary", use_container_width=True):
@@ -226,18 +231,13 @@ with c_btn2:
             pdf.multi_cell(0, 4, clean_text(FULL_TERMS))
             
             try:
-                raw_pdf = pdf.output()
-                if isinstance(raw_pdf, (bytearray, bytes)):
-                    final_pdf_bytes = bytes(raw_pdf)
-                else:
-                    final_pdf_bytes = raw_pdf.encode('latin-1')
-                
+                final_pdf = pdf.output()
                 st.download_button(
                     label="📥 DOWNLOAD PDF",
-                    data=final_pdf_bytes,
+                    data=bytes(final_pdf),
                     file_name=f"Order_{ord_num}.pdf",
                     mime="application/pdf",
                     use_container_width=True
                 )
             except Exception as e:
-                st.error(f"Chyba: {e}")
+                st.error(f"Error: {e}")
