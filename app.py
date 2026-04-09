@@ -14,7 +14,7 @@ MOJE_FIRMA = {
     "email": "info@themitrans.cz"
 }
 
-# --- 2. AKTUALIZOVANÉ PŘEPRAVNÍ PODMÍNKY (30 BODŮ) ---
+# --- 2. PŘEPRAVNÍ PODMÍNKY (30 BODŮ) ---
 FULL_TERMS = """1. Basic Provisions The Carrier undertakes to transport the goods from the place of dispatch to the place of destination according to the instructions of the Principal (The Mitrans s.r.o.) with due professional care and within the time limit stipulated by the Principal.
 2. Liability The Carrier shall be liable for any damage to the goods occurring from the moment the goods are taken over by the Carrier until the moment they are taken over by the consignee.
 3. Compensation for Damage In the event of loss or destruction of the consignment, the Carrier shall be obliged to compensate the damage in full.
@@ -57,10 +57,14 @@ The maximum aggregate amount of these penalties per one carriage shall be EUR 45
 
 By accepting this order, the Carrier expressly agrees to cover all damages to the transported cargo, even if such damages are not recorded in the CMR consignment note or in the delivery note."""
 
-# --- 3. POMOCNÉ FUNKCE ---
+# --- 3. AGRESIVNÍ ČIŠTĚNÍ TEXTU PRO PDF ---
 def clean_text(text):
     if text is None: return ""
-    return "".join(c for c in unicodedata.normalize('NFD', str(text)) if unicodedata.category(c) != 'Mn')
+    # Převedeme na string a odstraníme diakritiku
+    text = str(text)
+    normalized = "".join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+    # Odstraníme vše, co není v základní sadě ASCII (speciální symboly, emoji, nezlomitelné mezery)
+    return normalized.encode('ascii', 'ignore').decode('ascii')
 
 def load_data():
     if os.path.exists('carriers.csv'):
@@ -70,7 +74,7 @@ def load_data():
 def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
-# --- 4. STREAMLIT APLIKACE ---
+# --- 4. STREAMLIT ROZHRANÍ ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛", layout="centered")
 
 if "authenticated" not in st.session_state:
@@ -84,7 +88,7 @@ if not st.session_state["authenticated"]:
             st.session_state["authenticated"] = True
             st.rerun()
         else:
-            st.error("Spatne heslo")
+            st.error("Spatne heslo!")
     st.stop()
 
 st.title("🚛 The Mitrans s.r.o. - Order System")
@@ -147,7 +151,7 @@ with c_btn2:
             pdf = FPDF()
             pdf.add_page()
             
-            # Logo
+            # --- LOGO ---
             try:
                 if os.path.exists('logo.png'):
                     pdf.image('logo.png', 10, 8, 45)
@@ -157,12 +161,12 @@ with c_btn2:
             except:
                 pdf.ln(5)
 
-            # Header
+            # --- HLAVIČKA ---
             pdf.set_font('helvetica', 'B', 14)
             pdf.cell(0, 10, f"ORDER NUMBER: {clean_text(ord_num)}", ln=1, align='R')
             pdf.ln(5)
             
-            # Firms
+            # --- FIRMY ---
             pdf.set_font('helvetica', 'B', 10)
             pdf.cell(95, 7, "PRINCIPAL (The Mitrans s.r.o.):", ln=0)
             pdf.cell(95, 7, "CARRIER:", ln=1)
@@ -193,7 +197,7 @@ with c_btn2:
             y_u = pdf.get_y()
             pdf.set_y(max(y_l, y_u) + 10)
             
-            # Table
+            # --- TABULKA ---
             pdf.set_fill_color(230, 230, 230)
             pdf.set_font('helvetica', 'B', 10)
             pdf.cell(35, 10, "Quantity", border=1, fill=True, align='C')
@@ -208,14 +212,14 @@ with c_btn2:
             pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(qty)}", border=1, align='C')
             pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(price)} EUR", border=1, ln=1, align='C')
             
-            # Terms
+            # --- PODMÍNKY ---
             pdf.ln(10)
             pdf.set_font('helvetica', 'B', 11)
             pdf.cell(0, 10, "TERMS AND CONDITIONS", ln=1)
             pdf.set_font('helvetica', '', 7)
             pdf.multi_cell(0, 4, clean_text(FULL_TERMS))
             
-            # Download
+            # --- FINÁLNÍ EXPORT (OPRAVENO PRO PYTHON 3.13) ---
             try:
                 raw_pdf = pdf.output()
                 if isinstance(raw_pdf, (bytearray, bytes)):
@@ -231,4 +235,4 @@ with c_btn2:
                     use_container_width=True
                 )
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Chyba pri generovani PDF: {e}")
