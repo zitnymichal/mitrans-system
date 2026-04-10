@@ -73,7 +73,6 @@ def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
 def reset_form():
-    """Vymaže session_state bez st.rerun()"""
     for key in list(st.session_state.keys()):
         if key != "authenticated":
             del st.session_state[key]
@@ -103,7 +102,6 @@ st.subheader("1. Carrier Selection")
 carrier_names = ["-- New Carrier --"] + sorted(df_carriers['nazev'].tolist())
 selected_carrier = st.selectbox("Choose from directory", carrier_names, key="sel_carrier")
 
-# Logika pro načtení dat při změně selectboxu
 if selected_carrier != "-- New Carrier --":
     row = df_carriers[df_carriers['nazev'] == selected_carrier].iloc[0]
     st.session_state['c_name'] = str(row['nazev'])
@@ -134,7 +132,12 @@ st.divider()
 
 # --- SEKCE 2: LOGISTIKA ---
 st.subheader("2. Transport Logistics")
-ord_num = st.text_input("ORDER NUMBER", key="ord_num")
+col_o1, col_o2 = st.columns(2)
+with col_o1:
+    ord_num = st.text_input("ORDER NUMBER", key="ord_num")
+with col_o2:
+    truck_id = st.text_input("Truck ID / Plate (SPZ)", key="truck_id") # <--- NOVÉ POLE
+
 col_l, col_u = st.columns(2)
 with col_l:
     d_load = st.text_input("Loading Date", key="d_load")
@@ -197,7 +200,11 @@ with c_btn2:
             pdf.cell(95, 5, f"Email: {clean_text(c_email)}", ln=1)
             
             pdf.ln(10)
+            # --- ZOBRAZENÍ SPZ V PDF ---
             pdf.set_font('helvetica', 'B', 10)
+            pdf.cell(0, 7, f"TRUCK PLATE: {clean_text(truck_id)}", ln=1)
+            pdf.ln(2)
+
             pdf.cell(95, 7, f"LOADING: {clean_text(d_load)}", ln=0)
             pdf.cell(95, 7, f"UNLOADING: {clean_text(d_unload)}", ln=1)
             
