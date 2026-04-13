@@ -14,8 +14,8 @@ MOJE_FIRMA = {
     "email": "info@themitrans.cz"
 }
 
-# --- 2. TEXT PODMÍNEK (30 BODŮ) ---
-FULL_TERMS = """1. Basic Provisions The Carrier undertakes to transport the goods from the place of dispatch to the place of destination according to the instructions of the Principal (The Mitrans s.r.o.) with due professional care and within the time limit stipulated by the Principal.
+# --- 2. TEXTY PODMÍNEK (CZ a EN) ---
+TERMS_EN = """1. Basic Provisions The Carrier undertakes to transport the goods from the place of dispatch to the place of destination according to the instructions of the Principal (The Mitrans s.r.o.) with due professional care and within the time limit stipulated by the Principal.
 2. Liability The Carrier shall be liable for any damage to the goods occurring from the moment the goods are taken over by the Carrier until the moment they are taken over by the consignee.
 3. Compensation for Damage In the event of loss or destruction of the consignment, the Carrier shall be obliged to compensate the damage in full.
 4. Insurance For the cases referred to in the preceding paragraphs, the Carrier declares that it is insured in such a manner that any potential damage can be fully covered.
@@ -33,7 +33,7 @@ FULL_TERMS = """1. Basic Provisions The Carrier undertakes to transport the good
 - Delay exceeding 48 hours: contractual penalty in the amount of 100% of the freight price and a reason for immediate termination of cooperation.
 14. Failure to Meet the Loading Time In case the Carrier fails to meet the deadline for cargo collection, the Principal shall be entitled to cancel the order and assign it to another carrier. The Principal may claim a contractual penalty of up to 10% of the freight price.
 15. Prohibition of Resale The load must not, without the consent of The Mitrans s.r.o., be further resold (assigned to another forwarding agent). In the event of a breach of this obligation, the carriage shall not be paid.
-16. Maturity (Due Date) and Payment Conditions:The due date of the invoice shall be 60 days from the day the Principal receives the original hard copies of the following documents: the freight invoice, the CMR consignment note, and the delivery note (confirmed by the consignee). In the event of any damage to, destruction of, or loss of the cargo, the maturity of the freight invoice shall be automatically suspended. In such a case, the freight invoice shall only become due and payable after the exact amount of the damage has been fully quantified and resolved. The Principal reserves the right to unilaterally set off any quantified damage claims against the Carrier's freight invoice.
+16. Maturity (Due Date) and Payment Conditions: The due date of the invoice shall be 60 days from the day the Principal receives the original hard copies of the following documents: the freight invoice, the CMR consignment note, and the delivery note (confirmed by the consignee). In the event of any damage to, destruction of, or loss of the cargo, the maturity of the freight invoice shall be automatically suspended. In such a case, the freight invoice shall only become due and payable after the exact amount of the damage has been fully quantified and resolved. The Principal reserves the right to unilaterally set off any quantified damage claims against the Carrier's freight invoice.
 17. Dispute Resolution The Principal and the Carrier undertake to resolve disputes primarily by mutual agreement. If no agreement is reached, disputes shall be resolved by the court of subject-matter and local jurisdiction in the Czech Republic according to the registered office of the Principal.
 18. Assignment of Receivables The Carrier shall not be entitled to assign its receivables from the Principal to third parties without the Principal's prior written consent.
 19. Quality Standards and Penalties The Carrier confirms that it has been acquainted with the quality requirements. Penalties for Breach: 
@@ -57,6 +57,48 @@ The maximum aggregate amount of these penalties per one carriage shall be EUR 45
 
 By accepting this order, the Carrier expressly agrees to cover all damages to the transported cargo, even if such damages are not recorded in the CMR consignment note or in the delivery note."""
 
+TERMS_CZ = """1. Zakladni ustanoveni: Dopravce se zavazuje prepravit zbozi z mista odeslani do mista urceni podle pokynu objednatele (The Mitrans s.r.o.) s odbornou peci a ve lhute stanovene objednatelem.
+2. Odpovednost: Dopravce odpovida za skodu na zbozi vzniklou od okamziku prevzeti zbozi dopravcem az do okamziku jeho predani prijemci.
+3. Nahrady skody: V pripade ztraty nebo zniceni zasilky je dopravce povinen nahradit skodu v plne vysi.
+4. Pojisteni: Pro pripady uvedene v predchozich odstavcich dopravce prohlasuje, ze je pojisten takovym zpusobem, aby pripadna skoda mohla byt plne kryta.
+5. Dokumenty: Dopravce je povinen ihned po provedeni prepravy predat odesilateli (pripadne objednateli) dodaci a nakladni listy potvrzene prijemcem.
+6. Trasa: Dopravce se zavazuje dodrzovat optimalni prepravni trasy.
+7. Pojistna smlouva: Dopravce je povinen mit uzavreno pojisteni odpovednosti za skodu zpusobenou pri preprave s limitem kryti dostatecnym pro vsechny vznikle skody. Bez tohoto pojisteni nesmi dopravce prepravu provest. Platnou pojistku musi predlozit na vyzadani.
+8. Zakaz dalsiho podnajmu: Bez predchoziho pisemneho souhlasu objednatele neni dopravce opravnen provest prepravu prostrednictvim jineho dopravce.
+9. Parkovani: Dopravce je povinen zajistit, aby parkovani nalozenych vozidel behem noci, vikendu nebo prestavek probihalo vyhradne na oplocenych a hlidanych parkovistich.
+10. Zabezpeceni parkovani: Vozidla smi parkovat pouze na zabezpecenych prostorech, hlidanych parkovistich nebo cerpacich stanicich s vyhrazenym stanim pro kamiony.
+11. Casy (Time Slots): Dopravce se zavazuje dodrzet cas nakladky. Standardni doba dodani je 48 hodin od nakladky, nejpozdeji vsak 84 hodin, neni-li dohodnuto jinak.
+12. Informacni povinnost: Dopravce je povinen neprodlene (do 30 min) informovat objednatele o vsech skutecnostech majicich vliv na prepravu (skody, zpozdeni, poruchy).
+13. Smluvni pokuty za zpozdeni:
+- Zpozdeni do 12 hod: smluvni pokuta ve vysi 25% z ceny prepravneho.
+- Zpozdeni nad 12 hod: smluvni pokuta ve vysi 50% z ceny prepravneho.
+- Zpozdeni nad 48 hod: smluvni pokuta ve vysi 100% z ceny prepravneho a duvod k ukonceni spoluprace.
+14. Nedodrzeni casu nakladky: Pokud dopravce nedodrzi termin nakladky, objednatel muze objednavku zrusit a uctovat pokutu do 10% z ceny prepravneho.
+15. Zakaz dalsiho prodeje: Naklad nesmi byt bez souhlasu The Mitrans s.r.o. dale prodan (predan jine spedici). V pripade poruseni nebude preprava zaplacena.
+16. Splatnost a platebni podminky: Splatnost faktury je 60 dni ode dne, kdy objednatel obdrzi originaly nasledujicich dokumentu: fakturu za prepravu, nakladni list CMR a dodaci list (potvrzeny prijemcem). V pripade jakehokoli poskozeni, zniceni nebo ztraty nakladu se splatnost faktury automaticky pozastavuje. V takovem pripade se faktura stane splatnou az pote, co bude presna vyse skody plne vycisleny a vyreseny. Objednatel si vyhrazuje pravo jednostranne zapocist jakekoli vycislene naroky na nahradu skody proti fakture dopravce.
+17. Reseni sporu: Sporne zalezitosti budou reseny prednostne dohodou, jinak u vecne a mistne prislusneho soudu v Ceske republice dle sidla objednatele.
+18. Postoupeni pohledavek: Dopravce neni opravnen postoupit sve pohledavky vuci objednateli tretim osobam bez jeho pisemneho souhlasu.
+19. Standardy kvality a sankce: Pokuty za poruseni:
+- 100 EUR: nedostatecne zajisteni nakladu (pasy, podlozky).
+- 150 EUR: spatny stav vozidla (necistota, unik oleje).
+- 100 EUR: nevhodne obleceni/chovani ridice (OOPP).
+- 50 EUR: administrativni chyba u skody.
+- 50 EUR: nedodani dokumentu do 48 hod.
+Maximalni souhrnna pokuta na jednu prepravu je 450 EUR.
+20. Sprava pohledavek: Dopravce bere na vedomi, ze ucetni a reklamacni zalezitosti muze pro objednatele resit poverena treti strana.
+21. Fotodokumentace: The Mitrans s.r.o. neni povinna zajistovat vlastni fotodokumentaci skody (poleha na zaznam v CMR a dokumentaci prijemce).
+22. Hlaseni skod: Vsechny skodni udalosti musi byt nahlaseny neprodlene po jejich vzniku.
+23. Nesrovnalosti pri nakladce: Jakoukoli nesrovnalost (kvalita, baleni) musi dopravce nahlasit na info@themitrans.cz jeste pred nakladkou. Pozdejsi reklamace nebudou uznany.
+24. Nesrovnalosti pri vykladce: Jakoukoli nesrovnalost pri vykladce musi dopravce nahlasit na info@themitrans.cz pred odjezdem z mista vykladky.
+25. Regres: Dopravce uhradi objednateli vsechny naklady (pokuty, nahrady), ktere musel objednatel vyplatit zakaznikum vinou dopravce, a to do 10 dni.
+26. VW/Skoda/Seat/Audi klauzule: U preprav pro VW Group musi CMR a dodaci list obsahovat razitko: "PREPRAVNE BUDE ZAPLACENO JEN PO PREDLOZENI TETO KOPIE". Bez tohoto dokumentu neni faktura splatna.
+27. TESLA klauzule: U preprav pro TESLA je nutne pouzivat aplikaci TESLA. Pokuta za nepouziti nebo nedodrzeni casu je 500 EUR.
+28. Rozsirena odpovednost: Dopravce se zavazuje uhradit skodu na nakladu v plne vysi i nad ramec omezeni Umluvy CMR.
+29. Toyota klauzule: Nedodrzeni podminek vedouci k blokaci ridice je trestano pokutou 500 EUR.
+30. Skoda Auto klauzule: Nepristaveni vozidla k nakladce v dany den je trestano pokutou 500 EUR.
+
+Prijetim teto objednavky dopravce vyslovne souhlasi s uhradou vsech skod na prepravovanem nakladu, i kdyz nejsou zapsany v CMR."""
+
 # --- 3. POMOCNÉ FUNKCE ---
 def clean_text(text):
     if text is None: return ""
@@ -77,7 +119,7 @@ def reset_form():
         if key != "authenticated":
             del st.session_state[key]
 
-# --- 4. STREAMLIT ROZHRANÍ ---
+# --- 4. STREAMLIT KONFIGURACE ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛", layout="centered")
 
 if "authenticated" not in st.session_state:
@@ -85,24 +127,84 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state["authenticated"]:
     st.title("Login")
-    pw = st.text_input("Heslo", type="password")
-    if st.button("Vstoupit"):
+    pw = st.text_input("Heslo / Password", type="password")
+    if st.button("Vstoupit / Login"):
         if pw == "mitrans2026":
             st.session_state["authenticated"] = True
             st.rerun()
         else:
-            st.error("Spatne heslo!")
+            st.error("Spatne heslo / Wrong password!")
     st.stop()
 
-st.title("🚛 The Mitrans s.r.o. - Order System")
+# --- JAZYK ---
+lang = st.radio("Jazyk / Language", ("EN", "CZ"), horizontal=True)
+
+T = {
+    "CZ": {
+        "title": "Objednavka prepravy",
+        "sec1": "1. Vyber dopravce",
+        "dir": "Adresar",
+        "name": "Jmeno dopravce",
+        "vat": "ICO / DIC",
+        "tel": "Telefon",
+        "mail": "Email",
+        "addr": "Adresa",
+        "save": "Ulozit dopravce",
+        "sec2": "2. Logistika",
+        "ord_n": "CISLO OBJEDNAVKY",
+        "truck": "SPZ vozidla",
+        "l_date": "Datum nakladky",
+        "l_addr": "Misto nakladky",
+        "u_date": "Datum vykladky",
+        "u_addr": "Misto vykladky",
+        "sec3": "3. Naklad a Cena",
+        "qty": "Mnozstvi (LF)",
+        "price": "Cena (EUR)",
+        "desc": "Popis / VIN",
+        "new": "NOVA OBJEDNAVKA",
+        "prep": "PRIPRAVIT PDF",
+        "principal": "OBJEDNATEL",
+        "carrier": "DOPRAVCE",
+        "terms_label": "SMLUVNI PODMINKY"
+    },
+    "EN": {
+        "title": "Transport Order",
+        "sec1": "1. Carrier Selection",
+        "dir": "Directory",
+        "name": "Carrier Name",
+        "vat": "VAT / ID",
+        "tel": "Phone",
+        "mail": "Email",
+        "addr": "Address",
+        "save": "Save Carrier",
+        "sec2": "2. Logistics",
+        "ord_n": "ORDER NUMBER",
+        "truck": "Truck Plate",
+        "l_date": "Loading Date",
+        "l_addr": "Loading Address",
+        "u_date": "Unloading Date",
+        "u_addr": "Unloading Address",
+        "sec3": "3. Cargo & Price",
+        "qty": "Quantity (LF)",
+        "price": "Price (EUR)",
+        "desc": "Description / VIN",
+        "new": "NEW ORDER / CLEAR",
+        "prep": "PREPARE PDF",
+        "principal": "PRINCIPAL",
+        "carrier": "CARRIER",
+        "terms_label": "TERMS AND CONDITIONS"
+    }
+}[lang]
+
+st.title(f"🚛 {T['title']}")
 df_carriers = load_data()
 
-# --- SEKCE 1: DOPRAVCE ---
-st.subheader("1. Carrier Selection")
-carrier_names = ["-- New Carrier --"] + sorted(df_carriers['nazev'].tolist())
-selected_carrier = st.selectbox("Choose from directory", carrier_names, key="sel_carrier")
+# --- SEKCÍ DOPRAVCE ---
+st.subheader(T["sec1"])
+carrier_names = ["-- New / Novy --"] + sorted(df_carriers['nazev'].tolist())
+selected_carrier = st.selectbox(T["dir"], carrier_names, key="sel_carrier")
 
-if selected_carrier != "-- New Carrier --":
+if selected_carrier != "-- New / Novy --" and "c_name" not in st.session_state:
     row = df_carriers[df_carriers['nazev'] == selected_carrier].iloc[0]
     st.session_state['c_name'] = str(row['nazev'])
     st.session_state['c_ico'] = str(row['ico'])
@@ -112,60 +214,56 @@ if selected_carrier != "-- New Carrier --":
 
 col1, col2 = st.columns(2)
 with col1:
-    c_name = st.text_input("Carrier Name", key="c_name")
-    c_ico = st.text_input("VAT ID / ID", key="c_ico")
-    c_tel = st.text_input("Phone", key="c_tel")
+    st.text_input(T["name"], key="c_name")
+    st.text_input(T["vat"], key="c_ico")
+    st.text_input(T["tel"], key="c_tel")
 with col2:
-    c_email = st.text_input("Email", key="c_email")
-    c_addr = st.text_area("Full Address", key="c_addr")
+    st.text_input(T["mail"], key="c_email")
+    st.text_area(T["addr"], key="c_addr")
 
-if st.button("💾 Save/Update Carrier"):
-    if c_name:
-        new_row = {'nazev': c_name, 'adresa': c_addr, 'ico': c_ico, 'tel': c_tel, 'email': c_email}
-        df_carriers = df_carriers[df_carriers['nazev'] != c_name]
+if st.button(T["save"]):
+    if st.session_state.get('c_name'):
+        new_row = {'nazev': st.session_state.c_name, 'adresa': st.session_state.c_addr, 'ico': st.session_state.c_ico, 'tel': st.session_state.c_tel, 'email': st.session_state.c_email}
+        df_carriers = df_carriers[df_carriers['nazev'] != st.session_state.c_name]
         df_carriers = pd.concat([df_carriers, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df_carriers)
-        st.success("Ulozeno.")
+        st.success("OK")
         st.rerun()
 
 st.divider()
 
-# --- SEKCE 2: LOGISTIKA ---
-st.subheader("2. Transport Logistics")
-col_o1, col_o2 = st.columns(2)
-with col_o1:
-    ord_num = st.text_input("ORDER NUMBER", key="ord_num")
-with col_o2:
-    truck_id = st.text_input("Truck ID / Plate (SPZ)", key="truck_id") # <--- NOVÉ POLE
+# --- LOGISTIKA ---
+st.subheader(T["sec2"])
+c_o1, c_o2 = st.columns(2)
+with c_o1: st.text_input(T["ord_n"], key="ord_num")
+with c_o2: st.text_input(T["truck"], key="truck_id")
 
 col_l, col_u = st.columns(2)
 with col_l:
-    d_load = st.text_input("Loading Date", key="d_load")
-    a_load = st.text_area("Loading Address", key="a_load")
+    st.text_input(T["l_date"], key="d_load")
+    st.text_area(T["l_addr"], key="a_load")
 with col_u:
-    d_unload = st.text_input("Unloading Date", key="d_unload")
-    a_unload = st.text_area("Unloading Address", key="a_unload")
+    st.text_input(T["u_date"], key="d_unload")
+    st.text_area(T["u_addr"], key="a_unload")
 
 st.divider()
 
-# --- SEKCE 3: NÁKLAD ---
-st.subheader("3. Cargo & Price")
-c_qty, c_price = st.columns([1, 1])
-qty = c_qty.text_input("Quantity (LF)", key="qty")
-price = c_price.text_input("Price (EUR)", key="price")
-desc = st.text_area("Description / VIN", key="desc")
+# --- NÁKLAD ---
+st.subheader(T["sec3"])
+c_qty, c_price = st.columns(2)
+with c_qty: st.text_input(T["qty"], key="qty")
+with c_price: st.text_input(T["price"], key="price")
+st.text_area(T["desc"], key="desc")
 
 st.divider()
 
-# --- SEKCE 4: TLAČÍTKA ---
-c_btn1, c_btn2 = st.columns(2)
-with c_btn1:
-    st.button("🆕 NEW ORDER / CLEAR", use_container_width=True, on_click=reset_form)
-
-with c_btn2:
-    if st.button("📄 PREPARE PDF", type="primary", use_container_width=True):
-        if not ord_num or not c_name:
-            st.error("Chybi cislo objednavky!")
+# --- AKCE ---
+b1, b2 = st.columns(2)
+with b1: st.button(T["new"], use_container_width=True, on_click=reset_form)
+with b2:
+    if st.button(T["prep"], type="primary", use_container_width=True):
+        if not st.session_state.get('ord_num') or not st.session_state.get('c_name'):
+            st.error("Missing data!")
         else:
             pdf = FPDF()
             pdf.add_page()
@@ -174,77 +272,65 @@ with c_btn2:
                 if os.path.exists('logo.png'):
                     pdf.image('logo.png', 10, 8, 45)
                     pdf.ln(20)
-                else:
-                    pdf.ln(5)
-            except:
-                pdf.ln(5)
+                else: pdf.ln(5)
+            except: pdf.ln(5)
 
             pdf.set_font('helvetica', 'B', 14)
-            pdf.cell(0, 10, f"ORDER NUMBER: {clean_text(ord_num)}", ln=1, align='R')
+            pdf.cell(0, 10, f"{T['ord_n']}: {clean_text(st.session_state.ord_num)}", ln=1, align='R')
             pdf.ln(5)
             
             pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(95, 7, "PRINCIPAL (The Mitrans s.r.o.):", ln=0)
-            pdf.cell(95, 7, "CARRIER:", ln=1)
+            pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
+            pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
             
             pdf.set_font('helvetica', '', 9)
             pdf.cell(95, 5, clean_text(MOJE_FIRMA["nazev"]), ln=0)
-            pdf.cell(95, 5, clean_text(c_name), ln=1)
+            pdf.cell(95, 5, clean_text(st.session_state.c_name), ln=1)
             pdf.cell(95, 5, clean_text(MOJE_FIRMA["adresa"]), ln=0)
-            pdf.cell(95, 5, clean_text(c_addr), ln=1)
+            pdf.cell(95, 5, clean_text(st.session_state.c_addr), ln=1)
             pdf.cell(95, 5, f"VAT: {MOJE_FIRMA['dic']}", ln=0)
-            pdf.cell(95, 5, f"VAT/ID: {clean_text(c_ico)}", ln=1)
+            pdf.cell(95, 5, f"VAT/ID: {clean_text(st.session_state.c_ico)}", ln=1)
             pdf.cell(95, 5, f"Tel: {MOJE_FIRMA['tel']}", ln=0)
-            pdf.cell(95, 5, f"Tel: {clean_text(c_tel)}", ln=1)
+            pdf.cell(95, 5, f"Tel: {clean_text(st.session_state.c_tel)}", ln=1)
             pdf.cell(95, 5, f"Email: {MOJE_FIRMA['email']}", ln=0)
-            pdf.cell(95, 5, f"Email: {clean_text(c_email)}", ln=1)
+            pdf.cell(95, 5, f"Email: {clean_text(st.session_state.c_email)}", ln=1)
             
             pdf.ln(10)
-            # --- ZOBRAZENÍ SPZ V PDF ---
             pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(0, 7, f"TRUCK PLATE: {clean_text(truck_id)}", ln=1)
+            pdf.cell(0, 7, f"{T['truck']}: {clean_text(st.session_state.truck_id)}", ln=1)
             pdf.ln(2)
-
-            pdf.cell(95, 7, f"LOADING: {clean_text(d_load)}", ln=0)
-            pdf.cell(95, 7, f"UNLOADING: {clean_text(d_unload)}", ln=1)
+            pdf.cell(95, 7, f"{T['l_date']}: {clean_text(st.session_state.d_load)}", ln=0)
+            pdf.cell(95, 7, f"{T['u_date']}: {clean_text(st.session_state.d_unload)}", ln=1)
             
             pdf.set_font('helvetica', '', 9)
             y_log = pdf.get_y()
-            pdf.multi_cell(90, 5, clean_text(a_load), border=1)
+            pdf.multi_cell(90, 5, clean_text(st.session_state.a_load), border=1)
             y_l = pdf.get_y()
             pdf.set_xy(105, y_log)
-            pdf.multi_cell(95, 5, clean_text(a_unload), border=1)
-            y_u = pdf.get_y()
-            pdf.set_y(max(y_l, y_u) + 10)
+            pdf.multi_cell(95, 5, clean_text(st.session_state.a_unload), border=1)
+            pdf.set_y(max(y_l, pdf.get_y()) + 10)
             
             pdf.set_fill_color(230, 230, 230)
             pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(35, 10, "Quantity", border=1, fill=True, align='C')
-            pdf.cell(105, 10, "Description / VIN", border=1, fill=True, align='C')
-            pdf.cell(50, 10, "Price", border=1, fill=True, ln=1, align='C')
+            pdf.cell(35, 10, T["qty"], border=1, fill=True, align='C')
+            pdf.cell(105, 10, T["desc"], border=1, fill=True, align='C')
+            pdf.cell(50, 10, T["price"], border=1, fill=True, ln=1, align='C')
             
             pdf.set_font('helvetica', '', 9)
             y_t = pdf.get_y()
             pdf.set_xy(45, y_t)
-            pdf.multi_cell(105, 5, clean_text(desc), border=1)
+            pdf.multi_cell(105, 5, clean_text(st.session_state.desc), border=1)
             h = max(15, pdf.get_y() - y_t)
-            pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(qty)}", border=1, align='C')
-            pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(price)} EUR", border=1, ln=1, align='C')
+            pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(st.session_state.qty)}", border=1, align='C')
+            pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(st.session_state.price)} EUR", border=1, ln=1, align='C')
             
             pdf.ln(10)
             pdf.set_font('helvetica', 'B', 11)
-            pdf.cell(0, 10, "TERMS AND CONDITIONS", ln=1)
+            pdf.cell(0, 10, T["terms_label"], ln=1)
             pdf.set_font('helvetica', '', 7)
-            pdf.multi_cell(0, 4, clean_text(FULL_TERMS))
             
-            try:
-                final_pdf = pdf.output()
-                st.download_button(
-                    label="📥 DOWNLOAD PDF",
-                    data=bytes(final_pdf),
-                    file_name=f"Order_{ord_num}.pdf",
-                    mime="application/pdf",
-                    use_container_width=True
-                )
-            except Exception as e:
-                st.error(f"Error: {e}")
+            current_terms = TERMS_CZ if lang == "CZ" else TERMS_EN
+            pdf.multi_cell(0, 4, clean_text(current_terms))
+            
+            final_pdf = pdf.output()
+            st.download_button(label=f"DOWNLOAD {lang} PDF", data=bytes(final_pdf), file_name=f"Order_{st.session_state.ord_num}.pdf", mime="application/pdf", use_container_width=True)
