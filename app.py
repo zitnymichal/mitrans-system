@@ -99,7 +99,27 @@ Maximalni souhrnna pokuta na jednu prepravu je 450 EUR.
 
 Prijetim teto objednavky dopravce vyslovne souhlasi s uhradou vsech skod na prepravovanem nakladu, i kdyz nejsou zapsany v CMR."""
 
-# --- 3. POMOCNÉ FUNKCE ---
+# --- 3. SPECIÁLNÍ TŘÍDA PRO PDF S AUTOMATICKOU HLAVIČKOU ---
+class MitransPDF(FPDF):
+    def header(self):
+        # Logo na každé stránce
+        try:
+            if os.path.exists('logo.png'):
+                self.image('logo.png', 10, 8, 45)
+        except:
+            pass
+        
+        # Číslo objednávky vpravo nahoře na každé stránce
+        if 'ord_num' in st.session_state and st.session_state.ord_num:
+            self.set_font('helvetica', 'B', 12)
+            self.set_xy(100, 10)
+            # Tady dynamicky měníme text podle jazyka (pokud je v session state)
+            label = "ORDER" if st.session_state.get('lang_active') == "EN" else "OBJEDNAVKA"
+            self.cell(100, 10, f"{label}: {clean_text(st.session_state.ord_num)}", align='R')
+        
+        self.ln(20) # Mezera pod hlavičkou
+
+# --- 4. POMOCNÉ FUNKCE ---
 def clean_text(text):
     if text is None: return ""
     text = str(text)
@@ -120,7 +140,6 @@ def reset_form():
             del st.session_state[key]
 
 def update_carrier_fields():
-    """Funkce, která se spustí při změně v adresáři"""
     df = load_data()
     sel = st.session_state.sel_carrier
     if sel != "-- New / Novy --":
@@ -131,7 +150,7 @@ def update_carrier_fields():
         st.session_state['c_email'] = str(row['email'])
         st.session_state['c_addr'] = str(row['adresa'])
 
-# --- 4. STREAMLIT KONFIGURACE ---
+# --- 5. STREAMLIT ROZHRANÍ ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛", layout="centered")
 
 if "authenticated" not in st.session_state:
@@ -145,10 +164,11 @@ if not st.session_state["authenticated"]:
             st.session_state["authenticated"] = True
             st.rerun()
         else:
-            st.error("Spatne heslo / Wrong password!")
+            st.error("Spatne heslo!")
     st.stop()
 
 lang = st.radio("Jazyk / Language", ("EN", "CZ"), horizontal=True)
+st.session_state['lang_active'] = lang # Uložíme pro PDF třídu
 
 T = {
     "CZ": {
@@ -175,7 +195,6 @@ df_carriers = load_data()
 # 1. Dopravce
 st.subheader(T["sec1"])
 carrier_names = ["-- New / Novy --"] + sorted(df_carriers['nazev'].tolist())
-# ZDE JE OPRAVA: on_change zavolá funkci pro vyplnění polí
 st.selectbox(T["dir"], carrier_names, key="sel_carrier", on_change=update_carrier_fields)
 
 col1, col2 = st.columns(2)
@@ -198,7 +217,7 @@ if st.button(T["save"]):
 
 st.divider()
 
-# 2. Logistika
+# 2. Logistika & 3. Náklad (zkráceno pro ukázku, v kódu ponech všechna pole)
 st.subheader(T["sec2"])
 c_o1, c_o2 = st.columns(2)
 with c_o1: st.text_input(T["ord_n"], key="ord_num")
@@ -212,9 +231,6 @@ with col_u:
     st.text_input(T["u_date"], key="d_unload")
     st.text_area(T["u_addr"], key="a_unload")
 
-st.divider()
-
-# 3. Naklad
 st.subheader(T["sec3"])
 c_qty, c_price = st.columns(2)
 with c_qty: st.text_input(T["qty"], key="qty")
@@ -223,78 +239,72 @@ st.text_area(T["desc"], key="desc")
 
 st.divider()
 
-# 4. Akce
-b1, b2 = st.columns(2)
-with b1: st.button(T["new"], use_container_width=True, on_click=reset_form)
-with b2:
-    if st.button(T["prep"], type="primary", use_container_width=True):
-        if not st.session_state.get('ord_num') or not st.session_state.get('c_name'):
-            st.error("Missing data!")
-        else:
-            pdf = FPDF()
-            pdf.add_page()
-            try:
-                if os.path.exists('logo.png'):
-                    pdf.image('logo.png', 10, 8, 45)
-                    pdf.ln(20)
-                else: pdf.ln(5)
-            except: pdf.ln(5)
+# 4. Generování PDF
+if st.button(T["prep"], type="primary", use_container_width=True):
+    if not st.session_state.get('ord_num') or not st.session_state.get('c_name'):
+        st.error("Missing data!")
+    else:
+        # Použijeme naši novou třídu MitransPDF
+        pdf = MitransPDF()
+        pdf.add_page()
+        
+        # FIRMY
+        pdf.set_font('helvetica', 'B', 10)
+        pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
+        pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
+        
+        pdf.set_font('helvetica', '', 9)
+        pdf.cell(95, 5, clean_text(MOJE_FIRMA["nazev"]), ln=0)
+        pdf.cell(95, 5, clean_text(st.session_state.c_name), ln=1)
+        pdf.cell(95, 5, clean_text(MOJE_FIRMA["adresa"]), ln=0)
+        pdf.cell(95, 5, clean_text(st.session_state.c_addr), ln=1)
+        pdf.cell(95, 5, f"VAT: {MOJE_FIRMA['dic']}", ln=0)
+        pdf.cell(95, 5, f"VAT/ID: {clean_text(st.session_state.c_ico)}", ln=1)
+        pdf.cell(95, 5, f"Tel: {MOJE_FIRMA['tel']}", ln=0)
+        pdf.cell(95, 5, f"Tel: {clean_text(st.session_state.c_tel)}", ln=1)
+        pdf.cell(95, 5, f"Email: {MOJE_FIRMA['email']}", ln=0)
+        pdf.cell(95, 5, f"Email: {clean_text(st.session_state.c_email)}", ln=1)
+        
+        # LOGISTIKA
+        pdf.ln(10)
+        pdf.set_font('helvetica', 'B', 10)
+        pdf.cell(0, 7, f"{T['truck']}: {clean_text(st.session_state.truck_id)}", ln=1)
+        pdf.ln(2)
+        pdf.cell(95, 7, f"{T['l_date']}: {clean_text(st.session_state.d_load)}", ln=0)
+        pdf.cell(95, 7, f"{T['u_date']}: {clean_text(st.session_state.d_unload)}", ln=1)
+        
+        pdf.set_font('helvetica', '', 9)
+        y_log = pdf.get_y()
+        pdf.multi_cell(90, 5, clean_text(st.session_state.a_load), border=1)
+        y_l = pdf.get_y()
+        pdf.set_xy(105, y_log)
+        pdf.multi_cell(95, 5, clean_text(st.session_state.a_unload), border=1)
+        pdf.set_y(max(y_l, pdf.get_y()) + 10)
+        
+        # TABULKA
+        pdf.set_fill_color(230, 230, 230)
+        pdf.set_font('helvetica', 'B', 10)
+        pdf.cell(35, 10, T["qty"], border=1, fill=True, align='C')
+        pdf.cell(105, 10, T["desc"], border=1, fill=True, align='C')
+        pdf.cell(50, 10, T["price"], border=1, fill=True, ln=1, align='C')
+        
+        pdf.set_font('helvetica', '', 9)
+        y_t = pdf.get_y()
+        pdf.set_xy(45, y_t)
+        pdf.multi_cell(105, 5, clean_text(st.session_state.desc), border=1)
+        h = max(15, pdf.get_y() - y_t)
+        pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(st.session_state.qty)}", border=1, align='C')
+        pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(st.session_state.price)} EUR", border=1, ln=1, align='C')
+        
+        # SMLUVNÍ PODMÍNKY (Toto pravděpodobně vytvoří druhou stránku)
+        pdf.ln(10)
+        pdf.set_font('helvetica', 'B', 11)
+        pdf.cell(0, 10, T["terms_label"], ln=1)
+        pdf.set_font('helvetica', '', 7)
+        current_terms = TERMS_CZ if lang == "CZ" else TERMS_EN
+        pdf.multi_cell(0, 4, clean_text(current_terms))
+        
+        final_pdf = pdf.output()
+        st.download_button(label=f"📥 DOWNLOAD {lang} PDF", data=bytes(final_pdf), file_name=f"Order_{st.session_state.ord_num}.pdf", mime="application/pdf", use_container_width=True)
 
-            pdf.set_font('helvetica', 'B', 14)
-            pdf.cell(0, 10, f"{T['ord_n']}: {clean_text(st.session_state.ord_num)}", ln=1, align='R')
-            pdf.ln(5)
-            
-            pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
-            pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
-            
-            pdf.set_font('helvetica', '', 9)
-            pdf.cell(95, 5, clean_text(MOJE_FIRMA["nazev"]), ln=0)
-            pdf.cell(95, 5, clean_text(st.session_state.c_name), ln=1)
-            pdf.cell(95, 5, clean_text(MOJE_FIRMA["adresa"]), ln=0)
-            pdf.cell(95, 5, clean_text(st.session_state.c_addr), ln=1)
-            pdf.cell(95, 5, f"VAT: {MOJE_FIRMA['dic']}", ln=0)
-            pdf.cell(95, 5, f"VAT/ID: {clean_text(st.session_state.c_ico)}", ln=1)
-            pdf.cell(95, 5, f"Tel: {MOJE_FIRMA['tel']}", ln=0)
-            pdf.cell(95, 5, f"Tel: {clean_text(st.session_state.c_tel)}", ln=1)
-            pdf.cell(95, 5, f"Email: {MOJE_FIRMA['email']}", ln=0)
-            pdf.cell(95, 5, f"Email: {clean_text(st.session_state.c_email)}", ln=1)
-            
-            pdf.ln(10)
-            pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(0, 7, f"{T['truck']}: {clean_text(st.session_state.truck_id)}", ln=1)
-            pdf.ln(2)
-            pdf.cell(95, 7, f"{T['l_date']}: {clean_text(st.session_state.d_load)}", ln=0)
-            pdf.cell(95, 7, f"{T['u_date']}: {clean_text(st.session_state.d_unload)}", ln=1)
-            
-            pdf.set_font('helvetica', '', 9)
-            y_log = pdf.get_y()
-            pdf.multi_cell(90, 5, clean_text(st.session_state.a_load), border=1)
-            y_l = pdf.get_y()
-            pdf.set_xy(105, y_log)
-            pdf.multi_cell(95, 5, clean_text(st.session_state.a_unload), border=1)
-            pdf.set_y(max(y_l, pdf.get_y()) + 10)
-            
-            pdf.set_fill_color(230, 230, 230)
-            pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(35, 10, T["qty"], border=1, fill=True, align='C')
-            pdf.cell(105, 10, T["desc"], border=1, fill=True, align='C')
-            pdf.cell(50, 10, T["price"], border=1, fill=True, ln=1, align='C')
-            
-            pdf.set_font('helvetica', '', 9)
-            y_t = pdf.get_y()
-            pdf.set_xy(45, y_t)
-            pdf.multi_cell(105, 5, clean_text(st.session_state.desc), border=1)
-            h = max(15, pdf.get_y() - y_t)
-            pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(st.session_state.qty)}", border=1, align='C')
-            pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(st.session_state.price)} EUR", border=1, ln=1, align='C')
-            
-            pdf.ln(10)
-            pdf.set_font('helvetica', 'B', 11)
-            pdf.cell(0, 10, T["terms_label"], ln=1)
-            pdf.set_font('helvetica', '', 7)
-            current_terms = TERMS_CZ if lang == "CZ" else TERMS_EN
-            pdf.multi_cell(0, 4, clean_text(current_terms))
-            
-            final_pdf = pdf.output()
-            st.download_button(label=f"DOWNLOAD {lang} PDF", data=bytes(final_pdf), file_name=f"Order_{st.session_state.ord_num}.pdf", mime="application/pdf", use_container_width=True)
+st.button(T["new"], on_click=reset_form)
