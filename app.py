@@ -130,13 +130,11 @@ def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
 def start_new_order():
-    """Změní verzi formuláře (vynutí smazání polí) bez volání st.rerun()"""
     if "form_version" not in st.session_state:
         st.session_state.form_version = 0
     st.session_state.form_version += 1
 
 def update_carrier_fields():
-    """Načte data z adresáře do polí aktuální verze"""
     v = st.session_state.form_version
     df = load_data()
     sel_key = f"sel_carrier_{v}"
@@ -168,40 +166,47 @@ if not st.session_state["authenticated"]:
             st.rerun()
     st.stop()
 
-lang = st.radio("Language", ("EN", "CZ"), horizontal=True)
+lang = st.radio("Language / Jazyk", ("EN", "CZ"), horizontal=True)
 st.session_state['lang_active'] = lang
 
 T = {
     "CZ": {
         "title": "Objednavka prepravy", "dir": "Adresar", "save": "Ulozit dopravce", 
+        "name": "Jmeno dopravce", "vat": "ICO / DIC", "tel": "Telefon", "mail": "Email", "addr": "Adresa",
+        "sec1": "1. Vyber dopravce", "sec2": "2. Logistika", "sec3": "3. Naklad a cena",
         "ord_n": "CISLO OBJEDNAVKY", "truck": "SPZ vozidla", "new": "NOVA OBJEDNAVKA", 
-        "prep": "PRIPRAVIT PDF", "principal": "OBJEDNATEL", "carrier": "DOPRAVCE"
+        "prep": "PRIPRAVIT PDF", "principal": "OBJEDNATEL", "carrier": "DOPRAVCE",
+        "l_date": "Datum nakladky", "l_addr": "Misto nakladky", "u_date": "Datum vykladky", "u_addr": "Misto vykladky",
+        "qty": "Mnozstvi (LF)", "price": "Cena (EUR)", "desc": "Popis / VIN", "terms": "SMLUVNI PODMINKY"
     },
     "EN": {
         "title": "Transport Order", "dir": "Directory", "save": "Save Carrier", 
+        "name": "Carrier Name", "vat": "VAT / ID", "tel": "Phone", "mail": "Email", "addr": "Address",
+        "sec1": "1. Carrier Selection", "sec2": "2. Logistics", "sec3": "3. Cargo & Price",
         "ord_n": "ORDER NUMBER", "truck": "Truck Plate", "new": "NEW ORDER / CLEAR", 
-        "prep": "PREPARE PDF", "principal": "PRINCIPAL", "carrier": "CARRIER"
+        "prep": "PREPARE PDF", "principal": "PRINCIPAL", "carrier": "CARRIER",
+        "l_date": "Loading Date", "l_addr": "Loading Address", "u_date": "Unloading Date", "u_addr": "Unloading Address",
+        "qty": "Quantity (LF)", "price": "Price (EUR)", "desc": "Description / VIN", "terms": "TERMS AND CONDITIONS"
     }
 }[lang]
 
 st.title(f"🚛 {T['title']}")
 df_carriers = load_data()
-
 v = st.session_state.form_version
 
 # --- SEKCE 1: DOPRAVCE ---
-st.subheader("1. Carrier")
+st.subheader(T["sec1"])
 carrier_names = ["-- New / Novy --"] + sorted(df_carriers['nazev'].tolist())
 st.selectbox(T["dir"], carrier_names, key=f"sel_carrier_{v}", on_change=update_carrier_fields)
 
 col1, col2 = st.columns(2)
 with col1:
-    c_name = st.text_input("Name", key=f"c_name_{v}")
-    c_ico = st.text_input("VAT/ID", key=f"c_ico_{v}")
-    c_tel = st.text_input("Phone", key=f"c_tel_{v}")
+    c_name = st.text_input(T["name"], key=f"c_name_{v}")
+    c_ico = st.text_input(T["vat"], key=f"c_ico_{v}")
+    c_tel = st.text_input(T["tel"], key=f"c_tel_{v}")
 with col2:
-    c_email = st.text_input("Email", key=f"c_email_{v}")
-    c_addr = st.text_area("Address", key=f"c_addr_{v}")
+    c_email = st.text_input(T["mail"], key=f"c_email_{v}")
+    c_addr = st.text_area(T["addr"], key=f"c_addr_{v}")
 
 st.session_state['c_name'] = c_name
 st.session_state['c_ico'] = c_ico
@@ -215,12 +220,12 @@ if st.button(T["save"]):
         df_carriers = df_carriers[df_carriers['nazev'] != c_name]
         df_carriers = pd.concat([df_carriers, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df_carriers)
-        st.success("Saved")
+        st.success("OK")
 
 st.divider()
 
 # --- SEKCE 2: LOGISTIKA ---
-st.subheader("2. Logistics")
+st.subheader(T["sec2"])
 co1, co2 = st.columns(2)
 with co1: ord_num = st.text_input(T["ord_n"], key=f"ord_num_{v}")
 with co2: truck_id = st.text_input(T["truck"], key=f"truck_id_{v}")
@@ -228,20 +233,20 @@ st.session_state['ord_num'] = ord_num
 
 cl, cu = st.columns(2)
 with cl:
-    d_load = st.text_input("Loading Date", key=f"d_load_{v}")
-    a_load = st.text_area("Loading Address", key=f"a_load_{v}")
+    d_load = st.text_input(T["l_date"], key=f"d_load_{v}")
+    a_load = st.text_area(T["l_addr"], key=f"a_load_{v}")
 with cu:
-    d_unload = st.text_input("Unloading Date", key=f"d_unload_{v}")
-    a_unload = st.text_area("Unloading Address", key=f"a_unload_{v}")
+    d_unload = st.text_input(T["u_date"], key=f"d_unload_{v}")
+    a_unload = st.text_area(T["u_addr"], key=f"a_unload_{v}")
 
 st.divider()
 
 # --- SEKCE 3: NÁKLAD ---
-st.subheader("3. Cargo")
+st.subheader(T["sec3"])
 cq, cp = st.columns(2)
-with cq: qty = st.text_input("Quantity", key=f"qty_{v}")
-with cp: price = st.text_input("Price", key=f"price_{v}")
-desc = st.text_area("Description", key=f"desc_{v}")
+with cq: qty = st.text_input(T["qty"], key=f"qty_{v}")
+with cp: price = st.text_input(T["price"], key=f"price_{v}")
+desc = st.text_area(T["desc"], key=f"desc_{v}")
 
 st.divider()
 
@@ -253,12 +258,11 @@ with b1:
 with b2:
     if st.button(T["prep"], type="primary", use_container_width=True):
         if not ord_num or not c_name:
-            st.error("Missing data!")
+            st.error("Missing data / Chybi udaje!")
         else:
             pdf = MitransPDF()
             pdf.add_page()
             
-            # FIRMY
             pdf.set_font('helvetica', 'B', 10)
             pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
             pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
@@ -278,8 +282,8 @@ with b2:
             pdf.set_font('helvetica', 'B', 10)
             pdf.cell(0, 7, f"{T['truck']}: {clean_text(truck_id)}", ln=1)
             pdf.ln(2)
-            pdf.cell(95, 7, f"LOADING: {clean_text(d_load)}", ln=0)
-            pdf.cell(95, 7, f"UNLOADING: {clean_text(d_unload)}", ln=1)
+            pdf.cell(95, 7, f"{T['l_date']}: {clean_text(d_load)}", ln=0)
+            pdf.cell(95, 7, f"{T['u_date']}: {clean_text(d_unload)}", ln=1)
             
             pdf.set_font('helvetica', '', 9)
             y_log = pdf.get_y()
@@ -291,9 +295,9 @@ with b2:
             
             pdf.set_fill_color(230, 230, 230)
             pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(35, 10, "Quantity", border=1, fill=True, align='C')
-            pdf.cell(105, 10, "Description", border=1, fill=True, align='C')
-            pdf.cell(50, 10, "Price", border=1, fill=True, ln=1, align='C')
+            pdf.cell(35, 10, clean_text(T["qty"]), border=1, fill=True, align='C')
+            pdf.cell(105, 10, clean_text(T["desc"]), border=1, fill=True, align='C')
+            pdf.cell(50, 10, clean_text(T["price"]), border=1, fill=True, ln=1, align='C')
             
             pdf.set_font('helvetica', '', 9)
             y_t = pdf.get_y()
@@ -305,9 +309,9 @@ with b2:
             
             pdf.ln(10)
             pdf.set_font('helvetica', 'B', 11)
-            pdf.cell(0, 10, "TERMS AND CONDITIONS", ln=1)
+            pdf.cell(0, 10, T["terms"], ln=1)
             pdf.set_font('helvetica', '', 7)
             pdf.multi_cell(0, 4, clean_text(TERMS_CZ if lang == "CZ" else TERMS_EN))
             
             final_pdf = pdf.output()
-            st.download_button(label=f"📥 DOWNLOAD PDF", data=bytes(final_pdf), file_name=f"Order_{ord_num}.pdf", mime="application/pdf", use_container_width=True)
+            st.download_button(label=f"📥 DOWNLOAD {lang} PDF", data=bytes(final_pdf), file_name=f"Order_{ord_num}.pdf", mime="application/pdf", use_container_width=True)
