@@ -119,6 +119,18 @@ def reset_form():
         if key != "authenticated":
             del st.session_state[key]
 
+def update_carrier_fields():
+    """Funkce, která se spustí při změně v adresáři"""
+    df = load_data()
+    sel = st.session_state.sel_carrier
+    if sel != "-- New / Novy --":
+        row = df[df['nazev'] == sel].iloc[0]
+        st.session_state['c_name'] = str(row['nazev'])
+        st.session_state['c_ico'] = str(row['ico'])
+        st.session_state['c_tel'] = str(row['tel'])
+        st.session_state['c_email'] = str(row['email'])
+        st.session_state['c_addr'] = str(row['adresa'])
+
 # --- 4. STREAMLIT KONFIGURACE ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛", layout="centered")
 
@@ -136,81 +148,35 @@ if not st.session_state["authenticated"]:
             st.error("Spatne heslo / Wrong password!")
     st.stop()
 
-# --- JAZYK ---
 lang = st.radio("Jazyk / Language", ("EN", "CZ"), horizontal=True)
 
 T = {
     "CZ": {
-        "title": "Objednavka prepravy",
-        "sec1": "1. Vyber dopravce",
-        "dir": "Adresar",
-        "name": "Jmeno dopravce",
-        "vat": "ICO / DIC",
-        "tel": "Telefon",
-        "mail": "Email",
-        "addr": "Adresa",
-        "save": "Ulozit dopravce",
-        "sec2": "2. Logistika",
-        "ord_n": "CISLO OBJEDNAVKY",
-        "truck": "SPZ vozidla",
-        "l_date": "Datum nakladky",
-        "l_addr": "Misto nakladky",
-        "u_date": "Datum vykladky",
-        "u_addr": "Misto vykladky",
-        "sec3": "3. Naklad a Cena",
-        "qty": "Mnozstvi (LF)",
-        "price": "Cena (EUR)",
-        "desc": "Popis / VIN",
-        "new": "NOVA OBJEDNAVKA",
-        "prep": "PRIPRAVIT PDF",
-        "principal": "OBJEDNATEL",
-        "carrier": "DOPRAVCE",
-        "terms_label": "SMLUVNI PODMINKY"
+        "title": "Objednavka prepravy", "sec1": "1. Vyber dopravce", "dir": "Adresar",
+        "name": "Jmeno dopravce", "vat": "ICO / DIC", "tel": "Telefon", "mail": "Email", "addr": "Adresa",
+        "save": "Ulozit dopravce", "sec2": "2. Logistika", "ord_n": "CISLO OBJEDNAVKY", "truck": "SPZ vozidla",
+        "l_date": "Datum nakladky", "l_addr": "Misto nakladky", "u_date": "Datum vykladky", "u_addr": "Misto vykladky",
+        "sec3": "3. Naklad a Cena", "qty": "Mnozstvi (LF)", "price": "Cena (EUR)", "desc": "Popis / VIN",
+        "new": "NOVA OBJEDNAVKA", "prep": "PRIPRAVIT PDF", "principal": "OBJEDNATEL", "carrier": "DOPRAVCE", "terms_label": "SMLUVNI PODMINKY"
     },
     "EN": {
-        "title": "Transport Order",
-        "sec1": "1. Carrier Selection",
-        "dir": "Directory",
-        "name": "Carrier Name",
-        "vat": "VAT / ID",
-        "tel": "Phone",
-        "mail": "Email",
-        "addr": "Address",
-        "save": "Save Carrier",
-        "sec2": "2. Logistics",
-        "ord_n": "ORDER NUMBER",
-        "truck": "Truck Plate",
-        "l_date": "Loading Date",
-        "l_addr": "Loading Address",
-        "u_date": "Unloading Date",
-        "u_addr": "Unloading Address",
-        "sec3": "3. Cargo & Price",
-        "qty": "Quantity (LF)",
-        "price": "Price (EUR)",
-        "desc": "Description / VIN",
-        "new": "NEW ORDER / CLEAR",
-        "prep": "PREPARE PDF",
-        "principal": "PRINCIPAL",
-        "carrier": "CARRIER",
-        "terms_label": "TERMS AND CONDITIONS"
+        "title": "Transport Order", "sec1": "1. Carrier Selection", "dir": "Directory",
+        "name": "Carrier Name", "vat": "VAT / ID", "tel": "Phone", "mail": "Email", "addr": "Address",
+        "save": "Save Carrier", "sec2": "2. Logistics", "ord_n": "ORDER NUMBER", "truck": "Truck Plate",
+        "l_date": "Loading Date", "l_addr": "Loading Address", "u_date": "Unloading Date", "u_addr": "Unloading Address",
+        "sec3": "3. Cargo & Price", "qty": "Quantity (LF)", "price": "Price (EUR)", "desc": "Description / VIN",
+        "new": "NEW ORDER / CLEAR", "prep": "PREPARE PDF", "principal": "PRINCIPAL", "carrier": "CARRIER", "terms_label": "TERMS AND CONDITIONS"
     }
 }[lang]
 
 st.title(f"🚛 {T['title']}")
 df_carriers = load_data()
 
-# --- SEKCÍ DOPRAVCE ---
+# 1. Dopravce
 st.subheader(T["sec1"])
 carrier_names = ["-- New / Novy --"] + sorted(df_carriers['nazev'].tolist())
-selected_carrier = st.selectbox(T["dir"], carrier_names, key="sel_carrier")
-
-if selected_carrier != "-- New / Novy --" and "c_name" not in st.session_state:
-    row = df_carriers[df_carriers['nazev'] == selected_carrier].iloc[0]
-    st.session_state['c_name'] = str(row['nazev'])
-    st.session_state['c_ico'] = str(row['ico'])
-    st.session_state['c_tel'] = str(row['tel'])
-    st.session_state['c_email'] = str(row['email'])
-    st.session_state['c_addr'] = str(row['adresa'])
+# ZDE JE OPRAVA: on_change zavolá funkci pro vyplnění polí
+st.selectbox(T["dir"], carrier_names, key="sel_carrier", on_change=update_carrier_fields)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -232,7 +198,7 @@ if st.button(T["save"]):
 
 st.divider()
 
-# --- LOGISTIKA ---
+# 2. Logistika
 st.subheader(T["sec2"])
 c_o1, c_o2 = st.columns(2)
 with c_o1: st.text_input(T["ord_n"], key="ord_num")
@@ -248,7 +214,7 @@ with col_u:
 
 st.divider()
 
-# --- NÁKLAD ---
+# 3. Naklad
 st.subheader(T["sec3"])
 c_qty, c_price = st.columns(2)
 with c_qty: st.text_input(T["qty"], key="qty")
@@ -257,7 +223,7 @@ st.text_area(T["desc"], key="desc")
 
 st.divider()
 
-# --- AKCE ---
+# 4. Akce
 b1, b2 = st.columns(2)
 with b1: st.button(T["new"], use_container_width=True, on_click=reset_form)
 with b2:
@@ -267,7 +233,6 @@ with b2:
         else:
             pdf = FPDF()
             pdf.add_page()
-            
             try:
                 if os.path.exists('logo.png'):
                     pdf.image('logo.png', 10, 8, 45)
@@ -328,7 +293,6 @@ with b2:
             pdf.set_font('helvetica', 'B', 11)
             pdf.cell(0, 10, T["terms_label"], ln=1)
             pdf.set_font('helvetica', '', 7)
-            
             current_terms = TERMS_CZ if lang == "CZ" else TERMS_EN
             pdf.multi_cell(0, 4, clean_text(current_terms))
             
