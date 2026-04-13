@@ -130,27 +130,27 @@ def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
 def start_new_order():
-    """Klíčová funkce pro vymazání: změní verzi formuláře a promaže paměť"""
+    """Změní verzi formuláře, což vynutí smazání všech polí"""
     if "form_version" not in st.session_state:
         st.session_state.form_version = 0
     st.session_state.form_version += 1
-    
-    # Smazání konkrétních klíčů
-    keys_to_reset = ['c_name', 'c_ico', 'c_tel', 'c_email', 'c_addr', 'ord_num', 'truck_id', 'd_load', 'a_load', 'd_unload', 'a_unload', 'qty', 'price', 'desc', 'sel_carrier']
-    for key in keys_to_reset:
-        if key in st.session_state:
-            del st.session_state[key]
+    st.rerun()
 
 def update_carrier_fields():
+    """Načte data z adresáře do polí podle aktuální verze formuláře"""
+    v = st.session_state.form_version
     df = load_data()
-    sel = st.session_state.sel_carrier
-    if sel != "-- New / Novy --":
+    # Dynamicky najdeme klíč selectboxu pro aktuální verzi
+    sel_key = f"sel_carrier_{v}"
+    sel = st.session_state.get(sel_key)
+    
+    if sel and sel != "-- New / Novy --":
         row = df[df['nazev'] == sel].iloc[0]
-        st.session_state['c_name'] = str(row['nazev'])
-        st.session_state['c_ico'] = str(row['ico'])
-        st.session_state['c_tel'] = str(row['tel'])
-        st.session_state['c_email'] = str(row['email'])
-        st.session_state['c_addr'] = str(row['adresa'])
+        st.session_state[f"c_name_{v}"] = str(row['nazev'])
+        st.session_state[f"c_ico_{v}"] = str(row['ico'])
+        st.session_state[f"c_tel_{v}"] = str(row['tel'])
+        st.session_state[f"c_email_{v}"] = str(row['email'])
+        st.session_state[f"c_addr_{v}"] = str(row['adresa'])
 
 # --- 5. STREAMLIT ROZHRANÍ ---
 st.set_page_config(page_title="Mitrans Order System", page_icon="🚛")
@@ -176,82 +176,77 @@ st.session_state['lang_active'] = lang
 T = {
     "CZ": {
         "title": "Objednavka prepravy", "dir": "Adresar", "save": "Ulozit dopravce", 
-        "ord_n": "CISLO OBJEDNAVKY", "truck": "SPZ vozidla", "new": "NOVA OBJEDNAVKA", "prep": "PRIPRAVIT PDF"
+        "ord_n": "CISLO OBJEDNAVKY", "truck": "SPZ vozidla", "new": "NOVA OBJEDNAVKA", 
+        "prep": "PRIPRAVIT PDF", "principal": "OBJEDNATEL", "carrier": "DOPRAVCE"
     },
     "EN": {
         "title": "Transport Order", "dir": "Directory", "save": "Save Carrier", 
-        "ord_n": "ORDER NUMBER", "truck": "Truck Plate", "new": "NEW ORDER / CLEAR", "prep": "PREPARE PDF"
+        "ord_n": "ORDER NUMBER", "truck": "Truck Plate", "new": "NEW ORDER / CLEAR", 
+        "prep": "PREPARE PDF", "principal": "PRINCIPAL", "carrier": "CARRIER"
     }
 }[lang]
 
 st.title(f"🚛 {T['title']}")
 df_carriers = load_data()
 
-# --- FORMULÁŘOVÝ KONTEJNER ---
-# Každý prvek má v klíči verzi. Když se verze změní, Streamlit pole vymaže.
+# Aktuální verze formuláře
 v = st.session_state.form_version
 
+# --- SEKCE 1: DOPRAVCE ---
 st.subheader("1. Carrier")
 carrier_names = ["-- New / Novy --"] + sorted(df_carriers['nazev'].tolist())
 st.selectbox(T["dir"], carrier_names, key=f"sel_carrier_{v}", on_change=update_carrier_fields)
 
 col1, col2 = st.columns(2)
 with col1:
-    st.text_input("Name", key=f"c_name_{v}")
-    st.text_input("VAT/ID", key=f"c_ico_{v}")
-    st.text_input("Phone", key=f"c_tel_{v}")
+    c_name = st.text_input("Name", key=f"c_name_{v}")
+    c_ico = st.text_input("VAT/ID", key=f"c_ico_{v}")
+    c_tel = st.text_input("Phone", key=f"c_tel_{v}")
 with col2:
-    st.text_input("Email", key=f"c_email_{v}")
-    st.text_area("Address", key=f"c_addr_{v}")
+    c_email = st.text_input("Email", key=f"c_email_{v}")
+    c_addr = st.text_area("Address", key=f"c_addr_{v}")
 
-# Mapování pro vnitřní logiku (zkrácení dlouhých názvů klíčů s verzí)
-st.session_state['c_name'] = st.session_state.get(f"c_name_{v}", "")
-st.session_state['c_ico'] = st.session_state.get(f"c_ico_{v}", "")
-st.session_state['c_tel'] = st.session_state.get(f"c_tel_{v}", "")
-st.session_state['c_email'] = st.session_state.get(f"c_email_{v}", "")
-st.session_state['c_addr'] = st.session_state.get(f"c_addr_{v}", "")
+# Uložení do session_state pro PDF (aby kód zůstal přehledný)
+st.session_state['c_name'] = c_name
+st.session_state['c_ico'] = c_ico
+st.session_state['c_tel'] = c_tel
+st.session_state['c_email'] = c_email
+st.session_state['c_addr'] = c_addr
 
 if st.button(T["save"]):
-    if st.session_state.c_name:
-        new_row = {'nazev': st.session_state.c_name, 'adresa': st.session_state.c_addr, 'ico': st.session_state.c_ico, 'tel': st.session_state.c_tel, 'email': st.session_state.c_email}
-        df_carriers = df_carriers[df_carriers['nazev'] != st.session_state.c_name]
+    if c_name:
+        new_row = {'nazev': c_name, 'adresa': c_addr, 'ico': c_ico, 'tel': c_tel, 'email': c_email}
+        df_carriers = df_carriers[df_carriers['nazev'] != c_name]
         df_carriers = pd.concat([df_carriers, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df_carriers)
-        st.success("Saved")
+        st.success("Saved to Directory")
 
 st.divider()
 
+# --- SEKCE 2: LOGISTIKA ---
 st.subheader("2. Logistics")
 co1, co2 = st.columns(2)
-with co1: st.text_input(T["ord_n"], key=f"ord_num_{v}")
-with co2: st.text_input(T["truck"], key=f"truck_id_{v}")
-
-# Opětovné mapování pro PDF generátor
-st.session_state['ord_num'] = st.session_state.get(f"ord_num_{v}", "")
-st.session_state['truck_id'] = st.session_state.get(f"truck_id_{v}", "")
+with co1: ord_num = st.text_input(T["ord_n"], key=f"ord_num_{v}")
+with co2: truck_id = st.text_input(T["truck"], key=f"truck_id_{v}")
+st.session_state['ord_num'] = ord_num
+st.session_state['truck_id'] = truck_id
 
 cl, cu = st.columns(2)
 with cl:
-    st.text_input("Loading Date", key=f"d_load_{v}")
-    st.text_area("Loading Address", key=f"a_load_{v}")
+    d_load = st.text_input("Loading Date", key=f"d_load_{v}")
+    a_load = st.text_area("Loading Address", key=f"a_load_{v}")
 with cu:
-    st.text_input("Unloading Date", key=f"d_unload_{v}")
-    st.text_area("Unloading Address", key=f"a_unload_{v}")
+    d_unload = st.text_input("Unloading Date", key=f"d_unload_{v}")
+    a_unload = st.text_area("Unloading Address", key=f"a_unload_{v}")
 
-st.session_state['d_load'] = st.session_state.get(f"d_load_{v}", "")
-st.session_state['a_load'] = st.session_state.get(f"a_load_{v}", "")
-st.session_state['d_unload'] = st.session_state.get(f"d_unload_{v}", "")
-st.session_state['a_unload'] = st.session_state.get(f"a_unload_{v}", "")
+st.divider()
 
+# --- SEKCE 3: NÁKLAD ---
 st.subheader("3. Cargo")
 cq, cp = st.columns(2)
-with cq: st.text_input("Quantity", key=f"qty_{v}")
-with cp: st.text_input("Price", key=f"price_{v}")
-st.text_area("Description", key=f"desc_{v}")
-
-st.session_state['qty'] = st.session_state.get(f"qty_{v}", "")
-st.session_state['price'] = st.session_state.get(f"price_{v}", "")
-st.session_state['desc'] = st.session_state.get(f"desc_{v}", "")
+with cq: qty = st.text_input("Quantity", key=f"qty_{v}")
+with cp: price = st.text_input("Price", key=f"price_{v}")
+desc = st.text_area("Description", key=f"desc_{v}")
 
 st.divider()
 
@@ -262,34 +257,63 @@ with b1:
 
 with b2:
     if st.button(T["prep"], type="primary", use_container_width=True):
-        if not st.session_state.ord_num or not st.session_state.c_name:
-            st.error("Missing data")
+        if not ord_num or not c_name:
+            st.error("Missing Order Number or Carrier Name!")
         else:
             pdf = MitransPDF()
             pdf.add_page()
-            # ... Zde následuje stejný kód pro PDF jako v v14.0 ...
-            # Jen se ujisti, že používáš čisté názvy ze session_state (např. st.session_state.ord_num)
             
-            # (Vložení zbytku PDF kódu pro firmy, tabulku a podmínky z minulé verze)
-            
+            # FIRMY
             pdf.set_font('helvetica', 'B', 10)
-            pdf.cell(95, 7, f"PRINCIPAL:", ln=0)
-            pdf.cell(95, 7, f"CARRIER:", ln=1)
+            pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
+            pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
+            
             pdf.set_font('helvetica', '', 9)
             pdf.cell(95, 5, clean_text(MOJE_FIRMA["nazev"]), ln=0)
-            pdf.cell(95, 5, clean_text(st.session_state.c_name), ln=1)
+            pdf.cell(95, 5, clean_text(c_name), ln=1)
             pdf.cell(95, 5, clean_text(MOJE_FIRMA["adresa"]), ln=0)
-            pdf.cell(95, 5, clean_text(st.session_state.c_addr), ln=1)
-            pdf.ln(5)
-            # ... atd ...
+            pdf.cell(95, 5, clean_text(c_addr), ln=1)
+            pdf.cell(95, 5, f"VAT: {MOJE_FIRMA['dic']}", ln=0)
+            pdf.cell(95, 5, f"VAT/ID: {clean_text(c_ico)}", ln=1)
+            pdf.cell(95, 5, f"Tel: {MOJE_FIRMA['tel']}", ln=0)
+            pdf.cell(95, 5, f"Tel: {clean_text(c_tel)}", ln=1)
+            pdf.cell(95, 5, f"Email: {MOJE_FIRMA['email']}", ln=0)
+            pdf.cell(95, 5, f"Email: {clean_text(c_email)}", ln=1)
             
-            # Podmínky
+            pdf.ln(10)
+            pdf.set_font('helvetica', 'B', 10)
+            pdf.cell(0, 7, f"{T['truck']}: {clean_text(truck_id)}", ln=1)
+            pdf.ln(2)
+            pdf.cell(95, 7, f"LOADING: {clean_text(d_load)}", ln=0)
+            pdf.cell(95, 7, f"UNLOADING: {clean_text(d_unload)}", ln=1)
+            
+            pdf.set_font('helvetica', '', 9)
+            y_log = pdf.get_y()
+            pdf.multi_cell(90, 5, clean_text(a_load), border=1)
+            y_l = pdf.get_y()
+            pdf.set_xy(105, y_log)
+            pdf.multi_cell(95, 5, clean_text(a_unload), border=1)
+            pdf.set_y(max(y_l, pdf.get_y()) + 10)
+            
+            pdf.set_fill_color(230, 230, 230)
+            pdf.set_font('helvetica', 'B', 10)
+            pdf.cell(35, 10, "Quantity", border=1, fill=True, align='C')
+            pdf.cell(105, 10, "Description", border=1, fill=True, align='C')
+            pdf.cell(50, 10, "Price", border=1, fill=True, ln=1, align='C')
+            
+            pdf.set_font('helvetica', '', 9)
+            y_t = pdf.get_y()
+            pdf.set_xy(45, y_t)
+            pdf.multi_cell(105, 5, clean_text(desc), border=1)
+            h = max(15, pdf.get_y() - y_t)
+            pdf.set_xy(10, y_t); pdf.cell(35, h, f"LF{clean_text(qty)}", border=1, align='C')
+            pdf.set_xy(150, y_t); pdf.cell(50, h, f"{clean_text(price)} EUR", border=1, ln=1, align='C')
+            
             pdf.ln(10)
             pdf.set_font('helvetica', 'B', 11)
             pdf.cell(0, 10, "TERMS AND CONDITIONS", ln=1)
             pdf.set_font('helvetica', '', 7)
-            curr_terms = TERMS_CZ if lang == "CZ" else TERMS_EN
-            pdf.multi_cell(0, 4, clean_text(curr_terms))
+            pdf.multi_cell(0, 4, clean_text(TERMS_CZ if lang == "CZ" else TERMS_EN))
             
             final_pdf = pdf.output()
-            st.download_button("DOWNLOAD PDF", data=bytes(final_pdf), file_name=f"Order_{st.session_state.ord_num}.pdf", use_container_width=True)
+            st.download_button(label=f"📥 DOWNLOAD PDF", data=bytes(final_pdf), file_name=f"Order_{ord_num}.pdf", mime="application/pdf", use_container_width=True)
