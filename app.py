@@ -130,17 +130,15 @@ def save_data(df):
     df.to_csv('carriers.csv', index=False)
 
 def start_new_order():
-    """Změní verzi formuláře, což vynutí smazání všech polí"""
+    """Změní verzi formuláře (vynutí smazání polí) bez volání st.rerun()"""
     if "form_version" not in st.session_state:
         st.session_state.form_version = 0
     st.session_state.form_version += 1
-    st.rerun()
 
 def update_carrier_fields():
-    """Načte data z adresáře do polí podle aktuální verze formuláře"""
+    """Načte data z adresáře do polí aktuální verze"""
     v = st.session_state.form_version
     df = load_data()
-    # Dynamicky najdeme klíč selectboxu pro aktuální verzi
     sel_key = f"sel_carrier_{v}"
     sel = st.session_state.get(sel_key)
     
@@ -189,7 +187,6 @@ T = {
 st.title(f"🚛 {T['title']}")
 df_carriers = load_data()
 
-# Aktuální verze formuláře
 v = st.session_state.form_version
 
 # --- SEKCE 1: DOPRAVCE ---
@@ -206,7 +203,6 @@ with col2:
     c_email = st.text_input("Email", key=f"c_email_{v}")
     c_addr = st.text_area("Address", key=f"c_addr_{v}")
 
-# Uložení do session_state pro PDF (aby kód zůstal přehledný)
 st.session_state['c_name'] = c_name
 st.session_state['c_ico'] = c_ico
 st.session_state['c_tel'] = c_tel
@@ -219,7 +215,7 @@ if st.button(T["save"]):
         df_carriers = df_carriers[df_carriers['nazev'] != c_name]
         df_carriers = pd.concat([df_carriers, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df_carriers)
-        st.success("Saved to Directory")
+        st.success("Saved")
 
 st.divider()
 
@@ -229,7 +225,6 @@ co1, co2 = st.columns(2)
 with co1: ord_num = st.text_input(T["ord_n"], key=f"ord_num_{v}")
 with co2: truck_id = st.text_input(T["truck"], key=f"truck_id_{v}")
 st.session_state['ord_num'] = ord_num
-st.session_state['truck_id'] = truck_id
 
 cl, cu = st.columns(2)
 with cl:
@@ -258,7 +253,7 @@ with b1:
 with b2:
     if st.button(T["prep"], type="primary", use_container_width=True):
         if not ord_num or not c_name:
-            st.error("Missing Order Number or Carrier Name!")
+            st.error("Missing data!")
         else:
             pdf = MitransPDF()
             pdf.add_page()
@@ -267,7 +262,6 @@ with b2:
             pdf.set_font('helvetica', 'B', 10)
             pdf.cell(95, 7, f"{T['principal']} (The Mitrans s.r.o.):", ln=0)
             pdf.cell(95, 7, f"{T['carrier']}:", ln=1)
-            
             pdf.set_font('helvetica', '', 9)
             pdf.cell(95, 5, clean_text(MOJE_FIRMA["nazev"]), ln=0)
             pdf.cell(95, 5, clean_text(c_name), ln=1)
